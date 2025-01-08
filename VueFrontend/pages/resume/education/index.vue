@@ -135,91 +135,78 @@
     </PartialsHeader>
 </template>
 
-<script>
-import { defineComponent, ref, onMounted } from 'vue';
+<script setup>
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
+definePageMeta({
+    layout: "sidestar",
+});
 
-export default defineComponent({
-    name: 'EducationList',
-    setup() {
+// Set meta information
+useHead({
+    title: 'Education',
+    meta: [
+        { name: 'description', content: 'View Education List' },
+        { property: 'og:title', content: 'Education List' },
+        { property: 'og:description', content: 'View Education List.' }
+    ]
+});
 
-        definePageMeta({
-            layout: "sidestar",
+const educations = ref([]);
+const { $axios, $showToast } = useNuxtApp();
+const user_id = 1;
+const router = useRouter();
+
+const getEducation = async () => {
+    try {
+        const response = await $axios.get(`/user/${user_id}/education/`);
+        educations.value = response.data;
+    } catch (error) {
+        console.error('Error fetching educations:', error);
+    }
+};
+
+const updateEducation = async (educationIndex) => {
+    try {
+        await $axios.patch(
+            `/user/${educationIndex.user_id}/education/${educationIndex.education_id}`,
+            educationIndex
+        ).then(function (response) {
+            console.log(response);
+            $showToast("Education updated!");
+            router.push('/resume/education');
         });
+    } catch (error) {
+        console.error('Error updating:', error);
+    }
+};
 
-        // Set meta information
-        useHead({
-            title: 'Education',
-            meta: [
-                { name: 'description', content: 'View Education List' },
-                { property: 'og:title', content: 'Education List' },
-                { property: 'og:description', content: 'View Education List.' }
-            ]
-        });
+const deleteEducation = async (education_id) => {
+    try {
+        await $axios.delete(`/user/${user_id}/education/${education_id}`);
+        $showToast("Education deleted!");
+        getEducation();
+    } catch (error) {
+        console.error('Error deleting education:', error);
+    }
+};
 
-        const educations = ref([]);
-        const { $axios, $showToast } = useNuxtApp();
-        const user_id = 1;
-        const router = useRouter();
+const submitEducationForm = async (educationIndex) => {
+    const form = document.querySelector('.needs-validation');
 
-        const getEducation = async () => {
-            try {
-                const response = await $axios.get(`/user/${user_id}/education/`);
-                educations.value = response.data;
-            } catch (error) {
-                console.error('Error fetching educations:', error);
-            }
-        };
+    if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        return;
+    }
 
-        const updateEducation = async (educationIndex) => {
-            try {
-                await $axios.patch(
-                    `/user/${educationIndex.user_id}/education/${educationIndex.education_id}`,
-                    educationIndex
-                ).then(function (response) {
-                    console.log(response);
-                    $showToast("Education updated!");
-                    router.push('/resume/education');
-                });
-            } catch (error) {
-                console.error('Error updating:', error);
-            }
-        };
+    const educationToUpdate = educations.value[educationIndex];
 
-        const deleteEducation = async (education_id) => {
-            try {
-                await $axios.delete(`/user/${user_id}/education/${education_id}`);
-                $showToast("Education deleted!");
-                getEducation();
-            } catch (error) {
-                console.error('Error deleting education:', error);
-            }
-        };
+    updateEducation(educationToUpdate);
+};
 
-        const submitEducationForm = async (educationIndex) => {
-            const form = document.querySelector('.needs-validation');
-
-            if (!form.checkValidity()) {
-                form.classList.add('was-validated');
-                return;
-            }
-
-            const educationToUpdate = educations.value[educationIndex];
-
-            updateEducation(educationToUpdate);
-        };
-
-        onMounted(() => {
-            getEducation();
-        });
-
-        return {
-            educations,
-            deleteEducation,
-            submitEducationForm
-        };
-    },
+onMounted(() => {
+    getEducation();
 });
 </script>
 

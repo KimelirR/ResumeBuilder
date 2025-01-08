@@ -1,5 +1,4 @@
 <template>
-    <!-- https://cdn.pixabay.com/photo/2020/10/27/06/37/man-5689701_1280.jpg -->
     <div class="container">
       <div class="card border border-light">
         <div class="card-body">

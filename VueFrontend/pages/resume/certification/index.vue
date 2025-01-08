@@ -115,89 +115,76 @@
 
 </template>
 
-<script>
-import { defineComponent, ref, onMounted } from 'vue';
+<script setup>
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
+const certifications = ref([]);
+const { $axios, $showToast } = useNuxtApp();
+const user_id = 1;
+const router = useRouter();
 
-export default defineComponent({
-    name: 'certificationList',
-    setup() {
+definePageMeta({
+    layout: "sidestar",
+});
 
-        const certifications = ref([]);
-        const { $axios, $showToast } = useNuxtApp();
-        const user_id = 1;
-        const router = useRouter();
+useHead({
+    title: 'Certifications',
+    meta: [
+        { name: 'description', content: 'View Certification' },
+        { property: 'og:title', content: 'Certification' },
+        { property: 'og:description', content: 'View Certification.' }
+    ]
+});
 
-        definePageMeta({
-            layout: "sidestar",
+const getCertification = async () => {
+    try {
+        const response = await $axios.get(`/user/${user_id}/certification/`);
+        certifications.value = response.data;
+    } catch (error) {
+        console.error('Error fetching certifications:', error);
+    }
+};
+
+const updateCertification = async (certificationIndex) => {
+    try {
+        await $axios.patch(
+            `/user/${certificationIndex.user_id}/certification/${certificationIndex.certification_id}`,
+            certificationIndex
+        ).then(function (response) {
+            console.log(response);
+            $showToast("Certification updated!");
+            router.push('/resume/certification');
         });
+    } catch (error) {
+        console.error('Error updating:', error);
+    }
+};
 
-        useHead({
-            title: 'Certifications',
-            meta: [
-                { name: 'description', content: 'View Certification' },
-                { property: 'og:title', content: 'Certification' },
-                { property: 'og:description', content: 'View Certification.' }
-            ]
-        });
+const deleteCertification = async (certification_id) => {
+    try {
+        await $axios.delete(`/user/${user_id}/certification/${certification_id}`);
+        $showToast("Certification deleted!");
+        getCertification();
+    } catch (error) {
+        console.error('Error deleting certification:', error);
+    }
+};
 
-        const getCertification = async () => {
-            try {
-                const response = await $axios.get(`/user/${user_id}/certification/`);
-                certifications.value = response.data;
-            } catch (error) {
-                console.error('Error fetching certifications:', error);
-            }
-        };
+const submitCertificationForm = async (certificationIndex) => {
+    const certificationToUpdate = certifications.value[certificationIndex];
+    const form = document.querySelector('.needs-validation');
 
-        const updateCertification = async (certificationIndex) => {
-            try {
-                await $axios.patch(
-                    `/user/${certificationIndex.user_id}/certification/${certificationIndex.certification_id}`,
-                    certificationIndex
-                ).then(function (response) {
-                    console.log(response);
-                    $showToast("Certification updated!");
-                    router.push('/resume/certification');
-                });
-            } catch (error) {
-                console.error('Error updating:', error);
-            }
-        };
+    if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        return;
+    }
 
-        const deleteCertification = async (certification_id) => {
-            try {
-                await $axios.delete(`/user/${user_id}/certification/${certification_id}`);
-                $showToast("Certification deleted!");
-                getCertification();
-            } catch (error) {
-                console.error('Error deleting certification:', error);
-            }
-        };
+    updateCertification(certificationToUpdate);
+};
 
-        const submitCertificationForm = async (certificationIndex) => {
-            const certificationToUpdate = certifications.value[certificationIndex];
-            const form = document.querySelector('.needs-validation');
-
-            if (!form.checkValidity()) {
-                form.classList.add('was-validated');
-                return;
-            }
-
-            updateCertification(certificationToUpdate);
-        };
-
-        onMounted(() => {
-            getCertification();
-        });
-
-        return {
-            certifications,
-            deleteCertification,
-            submitCertificationForm
-        };
-    },
+onMounted(() => {
+    getCertification();
 });
 </script>
 

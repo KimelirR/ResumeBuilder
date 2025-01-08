@@ -73,7 +73,6 @@ def on_startup():
     print(dummy_data_loader_2.create_user())
     print(dummy_data_loader_3.create_user())
 
-
 @app.get("/", response_model=HealthCheck, tags=["Status"])
 def health_check() -> dict:
     return {

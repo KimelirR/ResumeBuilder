@@ -105,7 +105,7 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-4">
+                                <div class="col-sm-4 col-md-6 col-lg-8">
                                     <div class="form-group mb-2">
                                         <label class="label-control" for="location">Job
                                             Description:</label>
@@ -118,7 +118,9 @@
                                                         class="bi bi-plus"></i></button></span>
                                         </div>
                                     </div>
+                                </div>
 
+                                <div class="col-lg-12">
                                     <div v-if="experience.job_descriptions.length > 0" class="card mb-2">
                                         <div class="card-content collapse show">
                                             <div class="card-body card-dashboard">
@@ -163,103 +165,90 @@
     </PartialsHeader>
 </template>
 
-<script>
-import { defineComponent, ref, onMounted } from 'vue';
+<script setup>
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Bold_hr from '../../../components/Helpers/Bold_hr.vue';
 
-export default defineComponent({
-    name: 'experienceList',
-    setup() {
-        const experiences = ref([]);
-        const { $axios, $showToast } = useNuxtApp();
-        const user_id = 1;
-        const router = useRouter();
-        const newDescription = ref('');
 
-        definePageMeta({
-            layout: "sidestar",
-        });
+const experiences = ref([]);
+const { $axios, $showToast } = useNuxtApp();
+const user_id = 1;
+const router = useRouter();
+const newDescription = ref('');
 
-        // Set meta information
-        useHead({
-            title: 'Experience',
-            meta: [
-                { name: 'description', content: 'View Experience List' },
-                { property: 'og:title', content: 'Experience List' },
-                { property: 'og:description', content: 'View Experience List.' }
-            ]
-        });
+definePageMeta({
+    layout: "sidestar",
+});
 
-        const getExperience = async () => {
-            try {
-                const response = await $axios.get(`/user/${user_id}/experience/`);
-                experiences.value = response.data;
-            }
-            catch (error) {
-                console.error('Error fetching experiences:', error);
-            }
-        };
-        const updateExperience = async (experienceIndex) => {
-            try {
-                await $axios.patch(`/user/${experienceIndex.user_id}/experience/${experienceIndex.experience_id}`, experienceIndex).then(function (response) {
-                    console.log(response);
-                    $showToast("Experience updated!");
-                    router.push('/resume/experience');
-                });
-            }
-            catch (error) {
-                console.error('Error updating:', error);
-            }
-        };
-        const deleteExperience = async (experience_id) => {
-            try {
-                await $axios.delete(`/user/${user_id}/experience/${experience_id}`);
-                $showToast("Experience deleted!");
-                getExperience();
-            }
-            catch (error) {
-                console.error('Error deleting experience:', error);
-            }
-        };
-        const addDescription = (experienceIndex) => {
-            if (newDescription.value.trim() !== '') {
-                const experienceDescriptionToAdd = experiences.value[experienceIndex];
-                if (experienceDescriptionToAdd.job_descriptions.length < 5) {
-                    experienceDescriptionToAdd.job_descriptions.push(newDescription.value);
-                }
-                else {
-                    console.log('Errow while adding, exceeded 5');
-                }
-                newDescription.value = '';
-            }
-        };
-        const removeDescription = (experienceIndex, descriptionIndex) => {
-            const experienceDescriptionToremove = experiences.value[experienceIndex];
-            experienceDescriptionToremove.job_descriptions.splice(descriptionIndex, 1);
-        };
-        const submitExperienceForm = async (experienceIndex) => {
-            const experienceToUpdate = experiences.value[experienceIndex];
-            const form = document.querySelector('.needs-validation');
-            if (!form.checkValidity()) {
-                form.classList.add('was-validated');
-                return;
-            }
-            updateExperience(experienceToUpdate);
-        };
-        onMounted(() => {
-            getExperience();
+// Set meta information
+useHead({
+    title: 'Experience',
+    meta: [
+        { name: 'description', content: 'View Experience List' },
+        { property: 'og:title', content: 'Experience List' },
+        { property: 'og:description', content: 'View Experience List.' }
+    ]
+});
+
+const getExperience = async () => {
+    try {
+        const response = await $axios.get(`/user/${user_id}/experience/`);
+        experiences.value = response.data;
+    }
+    catch (error) {
+        console.error('Error fetching experiences:', error);
+    }
+};
+const updateExperience = async (experienceIndex) => {
+    try {
+        await $axios.patch(`/user/${experienceIndex.user_id}/experience/${experienceIndex.experience_id}`, experienceIndex).then(function (response) {
+            console.log(response);
+            $showToast("Experience updated!");
+            router.push('/resume/experience');
         });
-        return {
-            experiences,
-            deleteExperience,
-            submitExperienceForm,
-            addDescription,
-            newDescription,
-            removeDescription,
-        };
-    },
-    components: { Bold_hr }
+    }
+    catch (error) {
+        console.error('Error updating:', error);
+    }
+};
+const deleteExperience = async (experience_id) => {
+    try {
+        await $axios.delete(`/user/${user_id}/experience/${experience_id}`);
+        $showToast("Experience deleted!");
+        getExperience();
+    }
+    catch (error) {
+        console.error('Error deleting experience:', error);
+    }
+};
+const addDescription = (experienceIndex) => {
+    if (newDescription.value.trim() !== '') {
+        const experienceDescriptionToAdd = experiences.value[experienceIndex];
+        if (experienceDescriptionToAdd.job_descriptions.length < 5) {
+            experienceDescriptionToAdd.job_descriptions.push(newDescription.value);
+        }
+        else {
+            console.log('Errow while adding, exceeded 5');
+        }
+        newDescription.value = '';
+    }
+};
+const removeDescription = (experienceIndex, descriptionIndex) => {
+    const experienceDescriptionToremove = experiences.value[experienceIndex];
+    experienceDescriptionToremove.job_descriptions.splice(descriptionIndex, 1);
+};
+const submitExperienceForm = async (experienceIndex) => {
+    const experienceToUpdate = experiences.value[experienceIndex];
+    const form = document.querySelector('.needs-validation');
+    if (!form.checkValidity()) {
+        form.classList.add('was-validated');
+        return;
+    }
+    updateExperience(experienceToUpdate);
+};
+onMounted(() => {
+    getExperience();
 });
 </script>
 

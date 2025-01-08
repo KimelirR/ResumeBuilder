@@ -98,7 +98,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="col-sm-4 col-md-6 col-lg-8">
                                 <div class="form-group mb-2">
                                     <label class="label-control" for="location">Description:</label>
                                     <div class="input-group">
@@ -109,24 +109,26 @@
                                                     class="bi bi-plus"></i></button></span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div v-if="newExperience.job_descriptions.length > 0" class="card mb-2">
-                                    <div class="card-content collapse show">
-                                        <div class="card-body card-dashboard">
-                                            <div class="row">
-                                                <p>job descriptions here</p>
-                                                <hr class="border border-primary border-1 opacity-50">
-                                            </div>
-
-                                            <ol type="1">
-                                                <li v-for="(description, descriptionIndex) in newExperience.job_descriptions"
-                                                    :key="descriptionIndex" class="my-1">{{
-                                                        description
-                                                    }} <i @click="removeDescription(index, descriptionIndex)"
-                                                        class="bi bi-x bg-danger text-white"></i></li>
-                                            </ol>
-                                        </div>
+                    <div class="col-lg-12">
+                        <div v-if="newExperience.job_descriptions.length > 0" class="card mb-2">
+                            <div class="card-content collapse show">
+                                <div class="card-body card-dashboard">
+                                    <div class="row">
+                                        <p>job descriptions here</p>
+                                        <hr class="border border-primary border-1 opacity-50">
                                     </div>
+
+                                    <ol type="1">
+                                        <li v-for="(description, descriptionIndex) in newExperience.job_descriptions"
+                                            :key="descriptionIndex" class="my-1">{{
+                                                description
+                                            }} <i @click="removeDescription(index, descriptionIndex)"
+                                                class="bi bi-x bg-danger text-white"></i></li>
+                                    </ol>
                                 </div>
                             </div>
                         </div>
@@ -150,94 +152,81 @@
     </PartialsHeader>
 </template>
 
-<script>
-import { defineComponent, ref } from 'vue';
+<script setup>
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-export default defineComponent({
-    name: 'createExperience',
-    setup() {
+definePageMeta({
+    layout: "sidestar",
+});
 
-        definePageMeta({
-            layout: "sidestar",
-        });
+// Set meta information
+useHead({
+    title: 'Create Experience',
+    meta: [
+        { name: 'description', content: 'Form to Create Experience' },
+        { property: 'og:title', content: 'Create Experience' },
+        { property: 'og:description', content: 'Form to Create Experience.' }
+    ]
+});
 
-        // Set meta information
-        useHead({
-            title: 'Create Experience',
-            meta: [
-                { name: 'description', content: 'Form to Create Experience' },
-                { property: 'og:title', content: 'Create Experience' },
-                { property: 'og:description', content: 'Form to Create Experience.' }
-            ]
-        });
+const { $axios, $showToast } = useNuxtApp();
+const newExperience = ref({ card_title: '', job_title: '', company_name: '', company_url: '', location: '', job_description_title: '', job_descriptions: [], start_date: '', end_date: '' });
+const newDescription = ref('');
+const router = useRouter();
 
-        const { $axios, $showToast } = useNuxtApp();
-        const newExperience = ref({ card_title: '', job_title: '', company_name: '', company_url: '', location: '', job_description_title: '', job_descriptions: [], start_date: '', end_date: '' });
-        const newDescription = ref('');
-        const router = useRouter();
+const addDescription = () => {
 
-        const addDescription = () => {
+    if (newDescription.value.trim() !== '') {
+        const experienceDescriptionToAdd = newExperience.value.job_descriptions;
+        if (experienceDescriptionToAdd.length < 5) {
+            experienceDescriptionToAdd.push(newDescription.value);
+        } else {
+            console.log('Errow while adding, exceeded 5');
+        }
 
-            if (newDescription.value.trim() !== '') {
-                const experienceDescriptionToAdd = newExperience.value.job_descriptions;
-                if (experienceDescriptionToAdd.length < 5) {
-                    experienceDescriptionToAdd.push(newDescription.value);
-                } else {
-                    console.log('Errow while adding, exceeded 5');
-                }
+        newDescription.value = '';
+    }
+};
 
-                newDescription.value = '';
-            }
-        };
+const removeDescription = (descriptionIndex) => {
+    const experienceDescriptionToremove = newExperience.value.job_descriptions;
+    experienceDescriptionToremove.splice(descriptionIndex, 1)
+};
 
-        const removeDescription = (descriptionIndex) => {
-            const experienceDescriptionToremove = newExperience.value.job_descriptions;
-            experienceDescriptionToremove.splice(descriptionIndex, 1)
-        };
+const createExperience = async () => {
+    const form = document.querySelector('.needs-validation');
+    const user_id = 1;
+    if (form.checkValidity()) {
+        try {
+            await $axios.post(`/user/${user_id}/experience/`, newExperience.value);
+            $showToast("Experience created!");
+            router.push('/resume/experience');
+            // console.log(response);
+        } catch (error) {
+            console.log(error);
+        }
 
-        const createExperience = async () => {
-            const form = document.querySelector('.needs-validation');
-            const user_id = 1;
-            if (form.checkValidity()) {
-                try {
-                    await $axios.post(`/user/${user_id}/experience/`, newExperience.value);
-                    $showToast("Experience created!");
-                    router.push('/resume/experience');
-                    // console.log(response);
-                } catch (error) {
-                    console.log(error);
-                }
+    } else {
+        form.classList.add('was-validated');
+    };
+};
 
-            } else {
+onMounted(() => {
+    const forms = document.querySelectorAll('.needs-validation');
+
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!form.checkValidity()) {
                 form.classList.add('was-validated');
-            };
-        };
-
-        onMounted(() => {
-            const forms = document.querySelectorAll('.needs-validation');
-
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    if (!form.checkValidity()) {
-                        form.classList.add('was-validated');
-                    } else {
-                        createExperience();
-                    }
-                }, false);
-            });
-        });
-
-        return {
-            newExperience,
-            addDescription,
-            newDescription,
-            removeDescription
-        };
-    },
+            } else {
+                createExperience();
+            }
+        }, false);
+    });
 });
 </script>
 

@@ -101,72 +101,62 @@
     </PartialsHeader>
 </template>
 
-<script>
-import { defineComponent, ref } from 'vue';
+<script setup>
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-export default defineComponent({
-    name: 'CreateCertification',
-    setup() {
+definePageMeta({
+    layout: "sidestar",
+});
 
-        definePageMeta({
-            layout: "sidestar",
-        });
+// Set meta information
+useHead({
+    title: 'Create Certification',
+    meta: [
+        { name: 'description', content: 'Fill in the form and submit to achieve to create new certification' },
+        { property: 'og:title', content: 'Create Certification' },
+        { property: 'og:description', content: 'Page to create new certification.' }
+    ]
+});
 
-        // Set meta information
-        useHead({
-            title: 'Create Certification',
-            meta: [
-                { name: 'description', content: 'Fill in the form and submit to achieve to create new certification' },
-                { property: 'og:title', content: 'Create Certification' },
-                { property: 'og:description', content: 'Page to create new certification.' }
-            ]
-        });
+const { $axios, $showToast } = useNuxtApp();
 
-        const { $axios, $showToast } = useNuxtApp();
+const newCertification = ref({ card_title: '', school_name: '', education_level: '', course_title: '', location: '', final_grade: '', start_date: '', end_date: '' });
+const router = useRouter();
 
-        const newCertification = ref({ card_title: '', school_name: '', education_level: '', course_title: '', location: '', final_grade: '', start_date: '', end_date: '' });
-        const router = useRouter();
+const createCertification = async () => {
+    const form = document.querySelector('.needs-validation');
+    const user_id = 1;
+    if (form.checkValidity()) {
+        try {
+            await $axios.post(`/user/${user_id}/certification/`, newCertification.value);
+            $showToast("Certification created!");
+            router.push('/resume/certification');
+            console.log(response);
+        } catch (error) {
+            console.log(error);
+        }
 
-        const createCertification = async () => {
-            const form = document.querySelector('.needs-validation');
-            const user_id = 1;
-            if (form.checkValidity()) {
-                try {
-                    await $axios.post(`/user/${user_id}/certification/`, newCertification.value);
-                    $showToast("Certification created!");
-                    router.push('/resume/certification');
-                    console.log(response);
-                } catch (error) {
-                    console.log(error);
-                }
+    } else {
+        form.classList.add('was-validated');
+    };
+};
 
-            } else {
+onMounted(() => {
+    const forms = document.querySelectorAll('.needs-validation');
+
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!form.checkValidity()) {
                 form.classList.add('was-validated');
-            };
-        };
-
-        onMounted(() => {
-            const forms = document.querySelectorAll('.needs-validation');
-
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    if (!form.checkValidity()) {
-                        form.classList.add('was-validated');
-                    } else {
-                        createCertification();
-                    }
-                }, false);
-            });
-        });
-
-        return {
-            newCertification,
-        };
-    },
+            } else {
+                createCertification();
+            }
+        }, false);
+    });
 });
 </script>
 

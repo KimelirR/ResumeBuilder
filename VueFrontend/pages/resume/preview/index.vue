@@ -33,8 +33,8 @@
         </div>
       </div>
 
-<!-- Hidden Download Button (visible only during PDF generation) -->
-<div class="d-grid gap-2 col-6 mx-auto mb-3 hide-for-print">
+      <!-- Hidden Download Button (visible only during PDF generation) -->
+      <div class="d-grid gap-2 col-6 mx-auto mb-3 hide-for-print">
         <button @click="generatePDF" :disabled="isGenerating" class="btn btn-success">
           {{ isGenerating ? 'Generating PDF...' : 'Download PDF' }}
         </button>
@@ -104,7 +104,7 @@ useHead({
 const generatePDF = async (): Promise<void> => {
   if (pdfContent.value) {
     const content = pdfContent.value.innerHTML;
-    isGenerating.value = true; 
+    isGenerating.value = true;
 
     try {
       const response = await axiosT.post('/api/generate-pdf', {
@@ -122,8 +122,8 @@ const generatePDF = async (): Promise<void> => {
       URL.revokeObjectURL(blobUrl);
     } catch (error) {
       console.error('Error generating PDF:', error);
-    } finally{
-      isGenerating.value = false; 
+    } finally {
+      isGenerating.value = false;
     }
   }
 };
@@ -131,8 +131,8 @@ const generatePDF = async (): Promise<void> => {
 const fetchData = async (): Promise<void> => {
   try {
     const { data } = await axios.get(`/user/${user_id}/full_profile`);
-    console.log(data);
-    
+    // console.log(data);
+
     users.value = [data];
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -147,7 +147,8 @@ onMounted(() => {
 <style scoped>
 /* A4 Page Layout for PDF */
 .pdf-content {
-  max-width: 210mm; /* A4 Page width */
+  max-width: 210mm;
+  /* A4 Page width */
   margin: 0 auto;
   padding: 10mm;
   box-sizing: border-box;
@@ -175,7 +176,8 @@ onMounted(() => {
 
 @media print {
   .hide-for-print {
-    display: none; /* Hide the button when printing */
+    display: none;
+    /* Hide the button when printing */
   }
 
   /* PDF content layout adjustments */
